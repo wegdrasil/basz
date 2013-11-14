@@ -14,6 +14,12 @@
 #include <sys/wait.h>
 #include <fcntl.h>
 
+
+
+
+
+
+
 int CountChar(char *s, char c)
 {
 	int i;
@@ -65,6 +71,12 @@ int main(int argc, char const *argv[])
 		
 		cmdLine = strtok(cmdLine, "\n");
 
+		if(CountChar(cmdLine, '|') > 0)
+		{
+			printf("pipeline\n");
+			return;
+		}
+		
 		if(read == -1)
 		{
 			printf("Bye basz\n");
