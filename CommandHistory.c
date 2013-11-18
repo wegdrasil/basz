@@ -1,35 +1,5 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <fcntl.h>
-//--------------------------------------------------
-typedef struct CmdNode
-{
-	struct CmdNode* next;
-	//struct CmdNode* prev;
-	char* cmdLine;
-}
-CmdNode;
-//--------------------------------------------------
-typedef struct CommandHistory
-{
-	char* fileName;
-	unsigned int capacity;
-	int size;
-	int fileDesc;
-	FILE* pFile;
-	CmdNode* head;
-	CmdNode* tail;
-}
-CommandHistory;
-//--------------------------------------------------
-CommandHistory cmdHistory;
-//--------------------------------------------------
-
+#include "CommandHistory.h"
+#define FIFO_NAME "readhistoryFIFO"
 void AddCmdToHistory(CommandHistory* cmdHist, char** cmdLine)
 {
 	if(cmdHist->size < cmdHist->capacity)
@@ -56,7 +26,7 @@ void AddCmdToHistory(CommandHistory* cmdHist, char** cmdLine)
 	
  	 	for( ;tmprm->next != cmdHist->tail; tmprm = tmprm->next);
  	 		obl = tmprm;
- 	 	printf("obl %s\n", obl->cmdLine);
+ 	 	//printf("obl %s\n", obl->cmdLine);
 
  	 	free(cmdHist->tail);
  	 	cmdHist->tail = obl;
@@ -118,8 +88,8 @@ void ReadHistory(CommandHistory* cmdHist)
     char *cmdLine = NULL;
 	size_t len = 0;
 	cmdHist->pFile = fopen(cmdHist->fileName, "r");
-	// if (fp == NULL)
- //        exit(EXIT_FAILURE);
+	if (cmdHist->pFile == NULL)
+        exit(EXIT_FAILURE);
 
 	while(getline(&cmdLine, &len, cmdHist->pFile) != -1)
 	{
@@ -130,7 +100,7 @@ void ReadHistory(CommandHistory* cmdHist)
 	fclose(cmdHist->pFile);
 }
 
-void DestroyList(CommandHistory* cmdHist)
+void DestroyHistoryList(CommandHistory* cmdHist)
 {
  	CmdNode* tmp_rm = NULL;
 	int count = 0;
@@ -169,58 +139,31 @@ void DestroyList(CommandHistory* cmdHist)
 	cmdHist->tail = NULL;
 }
 
-void sigusr1_handler(int sig)
+void SendHistoryToFIFO(CommandHistory* cmdHist)
 {
-	PrintHistory(&cmdHistory);
-}
-
-int main(int argc, char const *argv[])
-{
-	cmdHistory.fileName = "history";
-	cmdHistory.capacity = 4;
-	cmdHistory.size = 0;
-	cmdHistory.head = NULL;
-	cmdHistory.tail = NULL;
-	//----------------------------------------
-	struct sigaction sa;
-	sa.sa_handler = sigusr1_handler;
-    sa.sa_flags = 0;
-    sigemptyset(&sa.sa_mask);
-
-    if (sigaction(SIGUSR1, &sa, NULL) == -1) {
-        perror("sigaction");
-        exit(1);
-    }
-	//----------------------------------------
+	CmdNode* tmp = NULL;
+	tmp = cmdHist->head;
+	char* msgEmpty = "History is empty\n";
 	
-	
-	//OpenCmdHistoryFile(&cmdHistory);
-	
-	char *cmdLine = NULL;
-	size_t len = 0;
+	mkfifo(FIFO_NAME, 0666);
+	char s[300];
+	int num, fd;
 
-	while(getline(&cmdLine, &len, stdin) != -1)
+	printf("waiting for readers...\n");
+	fd = open(FIFO_NAME, O_WRONLY);
+	
+	printf("got a reader--type some stuff\n");
+    	
+	if(tmp == NULL)
 	{
-		AddCmdToHistory(&cmdHistory, &cmdLine);
-		//PrintHistory(cmdHistory.head);
+		write(fd, msgEmpty, strlen(msgEmpty));
+    	return;
 	}
-	printf("printing history with SIGUSR\n");
-	
-	kill(getpid(), SIGUSR1);
-	printf("writing history to file\n");
-	
-	WriteHistory(&cmdHistory);
-	printf("before free\n");
-	DestroyList(&cmdHistory);
+	while(tmp != NULL)
+	{
+		write(fd, tmp->cmdLine, strlen(tmp->cmdLine));
+	 	tmp = tmp->next;
+	}
 
-	printf("after free\n");
-	kill(getpid(), SIGUSR1);
-		
-	printf("before read\n");
-	ReadHistory(&cmdHistory);
-	printf("after read\n");
-	kill(getpid(), SIGUSR1);
-	
-
-	return 0;
+	close(fd);
 }
