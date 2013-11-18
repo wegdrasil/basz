@@ -27,6 +27,6 @@ int main(int argc, char const *argv[])
     } while (num > 0);
     close(fd);
     unlink(FIFO_NAME);
-//	read(fd, s, 300);
+
 	return 0;
 }

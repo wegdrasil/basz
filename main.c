@@ -51,7 +51,6 @@ int main(int argc, char const *argv[])
 	//kill(getpid(), SIGUSR1);
 	
 
-	//to the infinity and beyond!!!
 	for(;;)
 	{
 		int ret;
@@ -69,14 +68,9 @@ int main(int argc, char const *argv[])
 
 		ssize_t read = getline(&cmdLine, &len, stdin);
 		
-
-		//check if new line
-//		if(strtok(cmdLine, "\n") == NULL)
-//			continue;
-
 		if((read == -1))
 		{
-			SendHistoryToFIFO(&cmdHistory); //compile and open ReadHistroyFifo.c
+			//SendHistoryToFIFO(&cmdHistory); //compile and open ReadHistroyFifo.c
 			printf("History saving \n");
 			WriteHistory(&cmdHistory);
 			DestroyHistoryList(&cmdHistory);
@@ -179,7 +173,6 @@ int main(int argc, char const *argv[])
 				for(i = 0; i < strlen(cmdLine)-2; i++ )
 				{	
 					truncCmdLine[i] = cmdLine[i];
-					//printf("%c\n", truncCmdLine[i]);	
 				}
 				
 			}	

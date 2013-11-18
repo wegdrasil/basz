@@ -2,7 +2,6 @@
 
 void ParsePipeline(char** astr, char*** parsedCmds, int pipeSize)
 {
-	//amount of commands in the pipeline
 	
  	char** cmds = (char **)malloc(sizeof(char *) * (pipeSize));
  	char* pch = NULL;
@@ -23,8 +22,6 @@ void ParsePipeline(char** astr, char*** parsedCmds, int pipeSize)
 	char** tmpCmd = NULL;
 	tmpCmd = (char**)malloc(sizeof(char*)*(pipeSize));
 
-    //im trying to make this _____ps_____-l_____ =>  ps -l
-
 	for(i = 0; i < pipeSize; i++)
 	{
 		tmpCmd[i] = (char *)malloc(sizeof(char) * (strlen(cmds[i]) - CountChar(cmds[i], ' ')));
@@ -42,8 +39,6 @@ void ParsePipeline(char** astr, char*** parsedCmds, int pipeSize)
 	    }
 		
 	}	
-
-// 	//	free(tmp);
     *parsedCmds = tmpCmd;
 }
 

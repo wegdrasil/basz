@@ -26,8 +26,7 @@ void AddCmdToHistory(CommandHistory* cmdHist, char** cmdLine)
 	
  	 	for( ;tmprm->next != cmdHist->tail; tmprm = tmprm->next);
  	 		obl = tmprm;
- 	 	//printf("obl %s\n", obl->cmdLine);
-
+ 	 	
  	 	free(cmdHist->tail);
  	 	cmdHist->tail = obl;
  	 	obl->next = NULL;
@@ -110,28 +109,21 @@ void DestroyHistoryList(CommandHistory* cmdHist)
 	{
 		tmp_rm = cmdHist->head;
 		
-		//printf("Find obl\n");
 		if(tmp_rm == cmdHist->tail)
 		{
-			//printf("I will delete %s... ", tmp_rm->cmdLine);
  	
 			free(cmdHist->head);
 			count++;
-			//printf("I've done it\n");
-
 			break;
 		}
 
  	  	for( ;tmp_rm->next != cmdHist->tail; tmp_rm = tmp_rm->next);
  	  		obl = tmp_rm;
- 		//printf("I will delete %s... ", obl->next->cmdLine);
  	
  	  	free(cmdHist->tail);
  	  	cmdHist->tail = obl;
  	  	obl->next = NULL;
  	  	count++;
-
- 		//printf("I've done it\n");
  	}
  	printf("deleted %d elements\n", count);
  	cmdHist->size = 0;
